@@ -40,5 +40,10 @@ def load_user(user_id):
     except:
         return None
 
+
 if __name__ == '__main__':
-    app.run(debug=True, port=5000)
+    # Render provides the PORT environment variable
+    port = int(os.environ.get("PORT", 5000))
+    
+    # Run the Flask app on the correct host and port
+    app.run(host="0.0.0.0", port=port, debug=True)
