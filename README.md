@@ -1,6 +1,6 @@
 # AI-Powered Learning Platform
 
-A modular, intelligent learning system that simplifies academic topics based on student academic level using Amazon Bedrock AI.
+A modular, intelligent learning system that simplifies academic topics based on student academic level using OpenAI API.
 
 ## 🏗️ Project Structure
 
@@ -49,7 +49,7 @@ A modular, intelligent learning system that simplifies academic topics based on 
     ├── database/
     │   └── models.py              # SQLAlchemy models
     └── utils/
-        ├── bedrock_client.py      # Amazon Bedrock integration
+        ├── openai_client.py       # OpenAI API integration
         └── scheduler.py           # Reminder scheduler
 ```
 
@@ -68,7 +68,7 @@ A modular, intelligent learning system that simplifies academic topics based on 
 - CRUD operations for user data
 
 ### Module 3: AI Text Processing
-- Amazon Bedrock integration for AI explanations
+- OpenAI API integration for AI explanations
 - Personalized content based on academic level
 - Prompt engineering for different education levels
 - Response formatting and storage
@@ -88,8 +88,8 @@ A modular, intelligent learning system that simplifies academic topics based on 
 ## 📋 Prerequisites
 
 - Python 3.8+
-- AWS Account with Bedrock access
-- AWS credentials configured
+- OpenAI API key
+- MongoDB (optional, defaults to local instance)
 
 ## 🔧 Installation
 
@@ -108,14 +108,12 @@ pip install -r requirements.txt
 copy .env.example .env
 ```
 
-Edit `.env` and add your AWS credentials:
+Edit `.env` and add your OpenAI API key:
 ```
 SECRET_KEY=your-secret-key-here
-AWS_REGION=us-east-1
-AWS_ACCESS_KEY_ID=your-access-key
-AWS_SECRET_ACCESS_KEY=your-secret-key
-BEDROCK_MODEL_ID=anthropic.claude-v2
-DATABASE_URI=sqlite:///learning_platform.db
+OPENAI_API_KEY=sk-your-openai-api-key-here
+OPENAI_MODEL=gpt-4o-mini
+MONGODB_URI=mongodb://localhost:27017/learning_platform
 ```
 
 4. **Run the application:**
@@ -135,18 +133,18 @@ The platform supports 5 academic levels:
 - **Undergraduate**: Detailed concepts, theories, applications
 - **Graduate**: Advanced concepts, research perspectives
 
-## 🔌 Amazon Bedrock Integration
+## 🤖 OpenAI Integration
 
-The platform uses Amazon Bedrock for AI-powered explanations:
+The platform uses OpenAI API for AI-powered explanations:
 
-1. **Model**: Claude v2 (configurable)
+1. **Model**: GPT-4o-mini (configurable)
 2. **Prompt Engineering**: Level-specific prompts
-3. **Fallback**: Sample explanations if Bedrock is not configured
+3. **Error Handling**: Comprehensive error messages for API issues
 
-To enable Bedrock:
-- Ensure AWS credentials have Bedrock access
-- Configure model ID in `.env`
-- Request access to Claude models in AWS Console
+To enable OpenAI:
+- Get an API key from OpenAI
+- Add the key to your `.env` file
+- Ensure you have sufficient credits in your OpenAI account
 
 ## 🗄️ Database Schema
 
@@ -164,10 +162,10 @@ To enable Bedrock:
 
 ## 🛠️ Technology Stack
 
-- **Backend**: Flask, SQLAlchemy, Flask-Login
+- **Backend**: Flask, MongoEngine, Flask-Login
 - **Frontend**: HTML, CSS, JavaScript, Jinja2
-- **Database**: SQLite
-- **AI**: Amazon Bedrock (Claude)
+- **Database**: MongoDB
+- **AI**: OpenAI API (GPT-4o-mini)
 - **Scheduler**: APScheduler
 - **TTS**: Web Speech API
 
@@ -189,7 +187,7 @@ Each module is self-contained with:
 ## 🚧 Future Enhancements
 
 - Email notifications for reminders
-- AWS Polly integration for better TTS
+- Advanced OpenAI models integration
 - Image generation for visual learning
 - Quiz generation based on topics
 - Progress tracking and analytics

@@ -8,55 +8,166 @@
     <h3>{{ topic.topic_name }}</h3>
 </div>
 
-<div class="card">
-    <div style="text-align: center; padding: 2rem;">
-        <button id="playBtn" class="btn" style="font-size: 1.2rem; padding: 1rem 2rem;">▶️ Play Audio</button>
-        <button id="pauseBtn" class="btn" style="font-size: 1.2rem; padding: 1rem 2rem; background: #e67e22; display: none;">⏸️ Pause</button>
-        <button id="stopBtn" class="btn" style="font-size: 1.2rem; padding: 1rem 2rem; background: #e74c3c;">⏹️ Stop</button>
+<div class="card" style="text-align: center;">
+    <div style="padding: 2rem;">
+        <button id="playBtn" class="btn" style="font-size: 1.2rem; padding: 1rem 2rem; margin: 0.5rem;">▶️ Play Audio</button>
+        <button id="pauseBtn" class="btn btn-secondary" style="font-size: 1.2rem; padding: 1rem 2rem; margin: 0.5rem; display: none;">⏸️ Pause</button>
+        <button id="stopBtn" class="btn" style="font-size: 1.2rem; padding: 1rem 2rem; margin: 0.5rem; background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);">⏹️ Stop</button>
     </div>
     
-    <div id="status" style="text-align: center; margin-top: 1rem; color: #7f8c8d;"></div>
+    <div id="status" style="margin-top: 1rem; font-size: 1.1rem; color: #667eea; font-weight: 600;"></div>
+    
+    <div style="margin-top: 2rem; padding: 1rem; background: #f0f0f0; border-radius: 8px;">
+        <p style="margin: 0.5rem 0;"><strong>Speed:</strong></p>
+        <input type="range" id="rateControl" min="0.5" max="2" step="0.1" value="0.9" style="width: 300px;">
+        <span id="rateValue">0.9x</span>
+    </div>
 </div>
 
 <div class="card">
     <h3>Explanation Text</h3>
-    <div style="line-height: 1.8; white-space: pre-wrap;">{{ topic.explanation }}</div>
+    <div id="explanationText" style="line-height: 1.8;">{{ topic.explanation|safe }}</div>
+    <div id="cleanText" style="display: none;">{{ topic.explanation|striptags }}</div>
 </div>
 
 <div class="card">
-    <a href="{{ url_for('module2.view_topic', topic_id=topic.id) }}" class="btn" style="background: #95a5a6;">Back to Topic</a>
+    <a href="{{ url_for('module2.view_topic', topic_id=topic.id) }}" class="btn btn-secondary">Back to Topic</a>
+    <a href="{{ url_for('module1.dashboard') }}" class="btn btn-success">Dashboard</a>
 </div>
 
 <script>
 let synth = window.speechSynthesis;
 let utterance = null;
+let isPaused = false;
 
-document.getElementById('playBtn').addEventListener('click', function() {
-    if (synth.paused) {
+// Get clean text without HTML tags
+const cleanTextElement = document.getElementById('cleanText');
+const explanationText = cleanTextElement ? cleanTextElement.textContent.trim() : document.getElementById('explanationText').textContent.trim();
+
+const playBtn = document.getElementById('playBtn');
+const pauseBtn = document.getElementById('pauseBtn');
+const stopBtn = document.getElementById('stopBtn');
+const status = document.getElementById('status');
+const rateControl = document.getElementById('rateControl');
+const rateValue = document.getElementById('rateValue');
+
+console.log('Text to speak:', explanationText.substring(0, 100) + '...');
+
+rateControl.addEventListener('input', function() {
+    rateValue.textContent = this.value + 'x';
+});
+
+playBtn.addEventListener('click', function() {
+    if (isPaused && utterance) {
         synth.resume();
+        isPaused = false;
+        status.textContent = '🎵 Playing...';
+        playBtn.style.display = 'none';
+        pauseBtn.style.display = 'inline-block';
     } else {
-        utterance = new SpeechSynthesisUtterance(`{{ topic.explanation|replace('\n', ' ')|replace('"', '\\"') }}`);
-        utterance.rate = 0.9;
+        // Stop any ongoing speech
+        synth.cancel();
+        
+        if (!explanationText || explanationText.length === 0) {
+            status.textContent = '❌ No text to read';
+            return;
+        }
+        
+        // Create new utterance with current rate
+        utterance = new SpeechSynthesisUtterance(explanationText);
+        utterance.rate = parseFloat(rateControl.value);
         utterance.pitch = 1;
+        utterance.volume = 1;
+        utterance.lang = 'en-US';
+        
+        utterance.onstart = function() {
+            status.textContent = '🎵 Playing...';
+            playBtn.style.display = 'none';
+            pauseBtn.style.display = 'inline-block';
+        };
+        
+        utterance.onend = function() {
+            status.textContent = '✅ Finished';
+            playBtn.style.display = 'inline-block';
+            pauseBtn.style.display = 'none';
+            isPaused = false;
+        };
+        
+        utterance.onerror = function(event) {
+            status.textContent = '❌ Error: ' + event.error;
+            playBtn.style.display = 'inline-block';
+            pauseBtn.style.display = 'none';
+            console.error('Speech error:', event);
+        };
+        
         synth.speak(utterance);
     }
-    document.getElementById('playBtn').style.display = 'none';
-    document.getElementById('pauseBtn').style.display = 'inline-block';
-    document.getElementById('status').textContent = 'Playing...';
 });
 
-document.getElementById('pauseBtn').addEventListener('click', function() {
-    synth.pause();
-    document.getElementById('playBtn').style.display = 'inline-block';
-    document.getElementById('pauseBtn').style.display = 'none';
-    document.getElementById('status').textContent = 'Paused';
+// Update rate when slider changes during playback
+rateControl.addEventListener('change', function() {
+    if (synth.speaking && utterance) {
+        // Need to restart with new rate
+        const wasPlaying = !synth.paused;
+        synth.cancel();
+        
+        utterance = new SpeechSynthesisUtterance(explanationText);
+        utterance.rate = parseFloat(this.value);
+        utterance.pitch = 1;
+        utterance.volume = 1;
+        utterance.lang = 'en-US';
+        
+        utterance.onstart = function() {
+            status.textContent = '🎵 Playing...';
+            playBtn.style.display = 'none';
+            pauseBtn.style.display = 'inline-block';
+        };
+        
+        utterance.onend = function() {
+            status.textContent = '✅ Finished';
+            playBtn.style.display = 'inline-block';
+            pauseBtn.style.display = 'none';
+            isPaused = false;
+        };
+        
+        utterance.onerror = function(event) {
+            status.textContent = '❌ Error: ' + event.error;
+            playBtn.style.display = 'inline-block';
+            pauseBtn.style.display = 'none';
+            console.error('Speech error:', event);
+        };
+        
+        if (wasPlaying) {
+            synth.speak(utterance);
+        }
+    }
 });
 
-document.getElementById('stopBtn').addEventListener('click', function() {
+pauseBtn.addEventListener('click', function() {
+    if (synth.speaking && !synth.paused) {
+        synth.pause();
+        isPaused = true;
+        playBtn.style.display = 'inline-block';
+        pauseBtn.style.display = 'none';
+        status.textContent = '⏸️ Paused';
+    }
+});
+
+stopBtn.addEventListener('click', function() {
     synth.cancel();
-    document.getElementById('playBtn').style.display = 'inline-block';
-    document.getElementById('pauseBtn').style.display = 'none';
-    document.getElementById('status').textContent = 'Stopped';
+    playBtn.style.display = 'inline-block';
+    pauseBtn.style.display = 'none';
+    status.textContent = '⏹️ Stopped';
+    isPaused = false;
+    utterance = null;
 });
+
+// Check if speech synthesis is supported
+if (!('speechSynthesis' in window)) {
+    status.textContent = '❌ Text-to-speech not supported in this browser';
+    playBtn.disabled = true;
+    pauseBtn.disabled = true;
+    stopBtn.disabled = true;
+}
 </script>
 {% endblock %}

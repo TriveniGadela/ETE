@@ -1,3 +1,4 @@
-from flask_sqlalchemy import SQLAlchemy
+import mongoengine
 
-db = SQLAlchemy()
+def init_db(app):
+    mongoengine.connect(host=app.config['MONGODB_URI'])

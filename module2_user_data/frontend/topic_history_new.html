@@ -1,0 +1,69 @@
+{% extends "module1_ui/frontend/base_dashboard.html" %}
+
+{% block title %}Learning History{% endblock %}
+
+{% block content %}
+<div class="content-wrapper">
+    <div class="center-panel">
+        <div class="panel-card">
+            <h3>📚 Your Learning History</h3>
+            <p style="color: #595959; margin-top: 8px;">Track all the topics you've explored</p>
+        </div>
+
+        {% if topics %}
+            <div style="display: grid; gap: 16px; margin-top: 20px;">
+                {% for topic in topics %}
+                <div class="panel-card" style="cursor: pointer; transition: all 0.2s;" onclick="window.location.href='{{ url_for('module2.view_topic', topic_id=topic.id) }}'">
+                    <div style="display: flex; justify-content: space-between; align-items: start;">
+                        <div style="flex: 1;">
+                            <h3 style="color: #262626; margin-bottom: 8px;">{{ topic.topic_name }}</h3>
+                            <div style="display: flex; gap: 16px; color: #8c8c8c; font-size: 13px; margin-top: 12px;">
+                                <span>📊 {{ topic.academic_level.replace('_', ' ').title() }}</span>
+                                <span>📅 {{ topic.created_at.strftime('%b %d, %Y') }}</span>
+                            </div>
+                        </div>
+                        <div style="display: flex; gap: 8px;">
+                            <a href="{{ url_for('module4.text_to_speech', topic_id=topic.id) }}" class="btn btn-secondary" style="padding: 8px 16px; font-size: 13px;" onclick="event.stopPropagation()">🔊 Listen</a>
+                            <a href="{{ url_for('module2.view_topic', topic_id=topic.id) }}" class="btn btn-primary" style="padding: 8px 16px; font-size: 13px;" onclick="event.stopPropagation()">View</a>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="panel-card" style="text-align: center; padding: 60px 24px; margin-top: 20px;">
+                <div style="font-size: 64px; margin-bottom: 16px;">📚</div>
+                <h3 style="color: #595959; font-weight: 500;">No topics learned yet</h3>
+                <p style="color: #8c8c8c; margin-top: 8px;">Start by asking a question from the dashboard!</p>
+                <a href="{{ url_for('module1.dashboard') }}" class="btn btn-primary" style="margin-top: 20px;">Go to Dashboard</a>
+            </div>
+        {% endif %}
+    </div>
+
+    <div class="right-panel">
+        <div class="panel-card">
+            <h3>📊 Learning Stats</h3>
+            <div style="margin-top: 20px;">
+                <div style="text-align: center; padding: 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 12px; color: white;">
+                    <div style="font-size: 36px; font-weight: 700;">{{ topics|length }}</div>
+                    <div style="margin-top: 8px; opacity: 0.9;">Topics Learned</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="panel-card" style="background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);">
+            <h3>💡 Quick Tip</h3>
+            <p style="margin-top: 12px; line-height: 1.6; color: #595959;">
+                Review your past topics regularly to reinforce learning and build long-term memory!
+            </p>
+        </div>
+    </div>
+</div>
+
+<style>
+    .panel-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+    }
+</style>
+{% endblock %}

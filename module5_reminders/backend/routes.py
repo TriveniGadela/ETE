@@ -2,14 +2,13 @@ from flask import Blueprint, render_template, redirect, url_for, request, flash
 from flask_login import login_required, current_user
 from shared.database.models import Reminder
 from datetime import datetime
-from shared.database.db_init import db
 
 module5_bp = Blueprint('module5', __name__)
 
 @module5_bp.route('/reminders')
 @login_required
 def reminders():
-    user_reminders = Reminder.query.filter_by(user_id=current_user.id).order_by(Reminder.scheduled_time.desc()).all()
+    user_reminders = Reminder.objects(user_id=str(current_user.id)).order_by('-scheduled_time')
     return render_template('module5_reminders/frontend/reminders.html', reminders=user_reminders)
 
 @module5_bp.route('/add-reminder', methods=['POST'])
@@ -26,25 +25,26 @@ def add_reminder():
     scheduled_datetime = datetime.strptime(f"{scheduled_date} {scheduled_time}", "%Y-%m-%d %H:%M")
     
     reminder = Reminder(
-        user_id=current_user.id,
+        user_id=str(current_user.id),
         message=message,
         scheduled_time=scheduled_datetime
     )
-    db.session.add(reminder)
-    db.session.commit()
+    reminder.save()
     
     flash('Reminder created successfully')
     return redirect(url_for('module5.reminders'))
 
-@module5_bp.route('/delete-reminder/<int:reminder_id>')
+@module5_bp.route('/delete-reminder/<reminder_id>')
 @login_required
 def delete_reminder(reminder_id):
-    reminder = Reminder.query.get_or_404(reminder_id)
-    if reminder.user_id != current_user.id:
+    reminder = Reminder.objects(id=reminder_id).first()
+    if not reminder:
+        flash('Reminder not found')
+        return redirect(url_for('module5.reminders'))
+    if reminder.user_id != str(current_user.id):
         flash('Access denied')
         return redirect(url_for('module5.reminders'))
     
-    db.session.delete(reminder)
-    db.session.commit()
+    reminder.delete()
     flash('Reminder deleted')
     return redirect(url_for('module5.reminders'))

@@ -7,12 +7,11 @@ load_dotenv()
 
 app = Flask(__name__, template_folder='.')
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'dev-secret-key')
-app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URI', 'sqlite:///learning_platform.db')
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['MONGODB_URI'] = os.getenv('MONGODB_URI', 'mongodb://localhost:27017/learning_platform')
 
 # Initialize database
-from shared.database.db_init import db
-db.init_app(app)
+from shared.database.db_init import init_db
+init_db(app)
 
 login_manager = LoginManager(app)
 login_manager.login_view = 'module1.login'
@@ -36,9 +35,10 @@ app.register_blueprint(module5_bp)
 
 @login_manager.user_loader
 def load_user(user_id):
-    return models.User.query.get(int(user_id))
+    try:
+        return models.User.objects(id=user_id).first()
+    except:
+        return None
 
 if __name__ == '__main__':
-    with app.app_context():
-        db.create_all()
     app.run(debug=True, port=5000)

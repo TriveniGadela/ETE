@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}AI Learning Platform{% endblock %}</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: #f5f5f5;
+            color: #262626;
+        }
+
+        /* Top Navigation Bar */
+        .top-navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 60px;
+            background: #fff;
+            border-bottom: 1px solid #e5e5e5;
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+            z-index: 1000;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-right: 40px;
+            cursor: pointer;
+        }
+
+        .top-nav-links {
+            display: flex;
+            gap: 30px;
+            flex: 1;
+        }
+
+        .top-nav-links a {
+            color: #595959;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+
+        .top-nav-links a:hover {
+            color: #667eea;
+        }
+
+        .top-nav-right {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            margin-left: auto;
+        }
+
+        .search-box {
+            position: relative;
+        }
+
+        .search-box input {
+            width: 300px;
+            padding: 8px 15px 8px 35px;
+            border: 1px solid #d9d9d9;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: border-color 0.2s;
+        }
+
+        .search-box input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #8c8c8c;
+        }
+
+        .notification-icon, .user-profile {
+            cursor: pointer;
+            position: relative;
+        }
+
+        .notification-icon {
+            font-size: 20px;
+            color: #595959;
+        }
+
+        .user-profile {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        /* Left Sidebar */
+        .left-sidebar {
+            position: fixed;
+            left: 0;
+            top: 60px;
+            width: 240px;
+            height: calc(100vh - 60px);
+            background: #fff;
+            border-right: 1px solid #e5e5e5;
+            overflow-y: auto;
+            padding: 20px 0;
+        }
+
+        .sidebar-section {
+            margin-bottom: 30px;
+        }
+
+        .sidebar-section-title {
+            padding: 0 20px;
+            font-size: 12px;
+            font-weight: 600;
+            color: #8c8c8c;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 10px;
+        }
+
+        .sidebar-menu {
+            list-style: none;
+        }
+
+        .sidebar-menu li {
+            margin: 2px 0;
+        }
+
+        .sidebar-menu a {
+            display: flex;
+            align-items: center;
+            padding: 10px 20px;
+            color: #595959;
+            text-decoration: none;
+            transition: all 0.2s;
+            font-weight: 500;
+        }
+
+        .sidebar-menu a:hover {
+            background: #f5f5f5;
+            color: #667eea;
+        }
+
+        .sidebar-menu a.active {
+            background: linear-gradient(90deg, rgba(102, 126, 234, 0.1) 0%, transparent 100%);
+            color: #667eea;
+            border-right: 3px solid #667eea;
+        }
+
+        .sidebar-icon {
+            margin-right: 12px;
+            font-size: 18px;
+        }
+
+        /* Main Content Area */
+        .main-content {
+            margin-left: 240px;
+            margin-top: 60px;
+            padding: 30px;
+            min-height: calc(100vh - 60px);
+        }
+
+        .content-wrapper {
+            display: flex;
+            gap: 30px;
+        }
+
+        .center-panel {
+            flex: 1;
+            min-width: 0;
+        }
+
+        /* Right Panel */
+        .right-panel {
+            width: 320px;
+            flex-shrink: 0;
+        }
+
+        .panel-card {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+        }
+
+        .panel-card h3 {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: #262626;
+        }
+
+        /* Flash Messages */
+        .flash-messages {
+            margin-bottom: 20px;
+        }
+
+        .flash {
+            padding: 12px 16px;
+            border-radius: 8px;
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+            color: white;
+            font-weight: 500;
+            margin-bottom: 10px;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Buttons */
+        .btn {
+            display: inline-block;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.2s;
+            font-size: 14px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #f5f5f5;
+            color: #595959;
+        }
+
+        .btn-secondary:hover {
+            background: #e5e5e5;
+        }
+
+        /* Form Elements */
+        input, select, textarea {
+            width: 100%;
+            padding: 10px 14px;
+            border: 1px solid #d9d9d9;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: inherit;
+            transition: border-color 0.2s;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        label {
+            display: block;
+            margin-top: 16px;
+            margin-bottom: 6px;
+            font-weight: 600;
+            color: #262626;
+            font-size: 14px;
+        }
+
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .right-panel {
+                display: none;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .left-sidebar {
+                transform: translateX(-100%);
+            }
+            .main-content {
+                margin-left: 0;
+            }
+            .search-box input {
+                width: 200px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Top Navigation Bar -->
+    <nav class="top-navbar">
+        <div class="logo">🎓 AI Learning</div>
+        <div class="top-nav-links">
+            <a href="{{ url_for('module1.home') }}">Explore</a>
+            <a href="{{ url_for('module2.topic_history') }}">My Topics</a>
+            <a href="{{ url_for('module5.reminders') }}">Reminders</a>
+        </div>
+        <div class="top-nav-right">
+            <div class="search-box">
+                <span class="search-icon">🔍</span>
+                <input type="text" placeholder="Search topics...">
+            </div>
+            <div class="notification-icon">🔔</div>
+            {% if current_user.is_authenticated %}
+                <div class="user-profile" title="{{ current_user.username }}">
+                    {{ current_user.username[0].upper() }}
+                </div>
+            {% endif %}
+        </div>
+    </nav>
+
+    <!-- Left Sidebar -->
+    <aside class="left-sidebar">
+        <div class="sidebar-section">
+            <div class="sidebar-section-title">Main</div>
+            <ul class="sidebar-menu">
+                {% if current_user.is_authenticated %}
+                    <li><a href="{{ url_for('module1.dashboard') }}" class="{% if request.endpoint == 'module1.dashboard' %}active{% endif %}">
+                        <span class="sidebar-icon">📊</span> Dashboard
+                    </a></li>
+                {% else %}
+                    <li><a href="{{ url_for('module1.home') }}" class="{% if request.endpoint == 'module1.home' %}active{% endif %}">
+                        <span class="sidebar-icon">🏠</span> Home
+                    </a></li>
+                {% endif %}
+            </ul>
+        </div>
+
+        {% if current_user.is_authenticated %}
+        <div class="sidebar-section">
+            <div class="sidebar-section-title">Learning</div>
+            <ul class="sidebar-menu">
+                <li><a href="{{ url_for('module1.dashboard') }}">
+                    <span class="sidebar-icon">🤖</span> AI Assistant
+                </a></li>
+                <li><a href="{{ url_for('module2.topic_history') }}" class="{% if request.endpoint == 'module2.topic_history' %}active{% endif %}">
+                    <span class="sidebar-icon">📚</span> Learning History
+                </a></li>
+                <li><a href="{{ url_for('module5.reminders') }}" class="{% if request.endpoint == 'module5.reminders' %}active{% endif %}">
+                    <span class="sidebar-icon">⏰</span> Reminders
+                </a></li>
+            </ul>
+        </div>
+
+        <div class="sidebar-section">
+            <div class="sidebar-section-title">Account</div>
+            <ul class="sidebar-menu">
+                <li><a href="{{ url_for('module2.profile') }}" class="{% if request.endpoint == 'module2.profile' %}active{% endif %}">
+                    <span class="sidebar-icon">👤</span> Profile
+                </a></li>
+                <li><a href="{{ url_for('module1.logout') }}">
+                    <span class="sidebar-icon">🚪</span> Logout
+                </a></li>
+            </ul>
+        </div>
+        {% else %}
+        <div class="sidebar-section">
+            <div class="sidebar-section-title">Get Started</div>
+            <ul class="sidebar-menu">
+                <li><a href="{{ url_for('module1.login') }}" class="{% if request.endpoint == 'module1.login' %}active{% endif %}">
+                    <span class="sidebar-icon">🔐</span> Login
+                </a></li>
+                <li><a href="{{ url_for('module1.register') }}" class="{% if request.endpoint == 'module1.register' %}active{% endif %}">
+                    <span class="sidebar-icon">✨</span> Register
+                </a></li>
+            </ul>
+        </div>
+        {% endif %}
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                <div class="flash-messages">
+                    {% for message in messages %}
+                        <div class="flash">{{ message }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+        
+        {% block content %}{% endblock %}
+    </main>
+</body>
+</html>
